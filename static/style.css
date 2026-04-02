@@ -1,0 +1,68 @@
+body {
+    background: #f6f8fb;
+}
+
+.page-title {
+    font-weight: 700;
+}
+
+.card {
+    border: 0;
+    border-radius: 1rem;
+    box-shadow: 0 0.35rem 1.25rem rgba(16, 24, 40, 0.08);
+}
+
+.card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #ffffff, #eef4ff);
+}
+
+.table thead th {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.sticky-form-card {
+    position: sticky;
+    top: 90px;
+}
+
+.json-block {
+    background: #111827;
+    color: #f9fafb;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.match-card {
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.match-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.6rem 1.4rem rgba(16, 24, 40, 0.12);
+}
+
+.badge {
+    letter-spacing: 0.01em;
+}
+
+@media (max-width: 991.98px) {
+    .sticky-form-card {
+        position: static;
+    }
+}

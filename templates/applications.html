@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Applications | Job Application Tracker{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="page-title mb-1">Applications</h1>
+        <p class="text-muted mb-0">Monitor your application pipeline and interview progress.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">All Applications</h2>
+                <span class="badge bg-primary">{{ applications|length }} total</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Job</th>
+                                <th>Company</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for application in applications %}
+                            <tr>
+                                <td>{{ application.application_date }}</td>
+                                <td class="fw-semibold">{{ application.job_title }}</td>
+                                <td>{{ application.company_name }}</td>
+                                <td><span class="badge bg-{{ status_badge_class(application.status) }}">{{ application.status }}</span></td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('applications', view=application.application_id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ url_for('applications', edit=application.application_id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <form action="{{ url_for('delete_application', application_id=application.application_id) }}" method="post" class="d-inline" onsubmit="return confirmDelete('application');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No applications added yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if selected_application %}
+        <div class="card mt-4">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Application Detail</h2>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><strong>Job:</strong> {{ selected_application.job_title }}</div>
+                    <div class="col-md-6"><strong>Company:</strong> {{ selected_application.company_name }}</div>
+                    <div class="col-md-6"><strong>Application Date:</strong> {{ selected_application.application_date }}</div>
+                    <div class="col-md-6"><strong>Status:</strong> <span class="badge bg-{{ status_badge_class(selected_application.status) }}">{{ selected_application.status }}</span></div>
+                    <div class="col-md-6"><strong>Resume Version:</strong> {{ selected_application.resume_version or '—' }}</div>
+                    <div class="col-md-6"><strong>Cover Letter Sent:</strong> {{ 'Yes' if selected_application.cover_letter_sent else 'No' }}</div>
+                    <div class="col-12">
+                        <strong>Interview Data:</strong>
+                        <pre class="json-block mt-2">{{ selected_application.interview_parsed | tojson(indent=2) }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card sticky-form-card">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">{% if edit_application %}Edit Application{% else %}Add Application{% endif %}</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% if edit_application %}{{ url_for('edit_application', application_id=edit_application.application_id) }}{% else %}{{ url_for('add_application') }}{% endif %}">
+                    <div class="mb-3">
+                        <label class="form-label">Job</label>
+                        <select name="job_id" class="form-select" required>
+                            <option value="">Select job</option>
+                            {% for job in jobs %}
+                            <option value="{{ job.job_id }}" {% if edit_application and edit_application.job_id == job.job_id %}selected{% endif %}>{{ job.company_name }} — {{ job.job_title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Application Date</label>
+                        <input type="date" name="application_date" class="form-control" required value="{{ edit_application.application_date if edit_application else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        {% set current_status = edit_application.status if edit_application else 'Applied' %}
+                        <select name="status" class="form-select">
+                            {% for option in ['Applied', 'Screening', 'Interview', 'Offer', 'Rejected', 'Withdrawn'] %}
+                            <option value="{{ option }}" {% if current_status == option %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Resume Version</label>
+                        <input type="text" name="resume_version" class="form-control" value="{{ edit_application.resume_version if edit_application else '' }}">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="cover_letter_sent" id="cover_letter_sent" {% if edit_application and edit_application.cover_letter_sent %}checked{% endif %}>
+                        <label class="form-check-label" for="cover_letter_sent">Cover letter sent</label>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Interview Data (JSON)</label>
+                        <textarea name="interview_data" class="form-control font-monospace" rows="8" placeholder='{"interview_date":"2026-04-10","interviewers":["Jane Smith"],"next_steps":"Technical round"}'>{{ edit_application.interview_data_pretty if edit_application else '{}' }}</textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">{% if edit_application %}Update{% else %}Add{% endif %} Application</button>
+                        {% if edit_application %}
+                        <a href="{{ url_for('applications') }}" class="btn btn-outline-secondary">Cancel</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

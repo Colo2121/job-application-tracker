@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Contacts | Job Application Tracker{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="page-title mb-1">Contacts</h1>
+        <p class="text-muted mb-0">Keep track of recruiters, hiring managers, and referrals.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">All Contacts</h2>
+                <span class="badge bg-primary">{{ contacts|length }} total</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Company</th>
+                                <th>Title</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contact in contacts %}
+                            <tr>
+                                <td class="fw-semibold">{{ contact.contact_name }}</td>
+                                <td>{{ contact.company_name }}</td>
+                                <td>{{ contact.title or '—' }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('contacts', view=contact.contact_id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                                    <a href="{{ url_for('contacts', edit=contact.contact_id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                    <form action="{{ url_for('delete_contact', contact_id=contact.contact_id) }}" method="post" class="d-inline" onsubmit="return confirmDelete('contact');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No contacts added yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% if selected_contact %}
+        <div class="card mt-4">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Contact Detail</h2>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6"><strong>Name:</strong> {{ selected_contact.contact_name }}</div>
+                    <div class="col-md-6"><strong>Company:</strong> {{ selected_contact.company_name }}</div>
+                    <div class="col-md-6"><strong>Title:</strong> {{ selected_contact.title or '—' }}</div>
+                    <div class="col-md-6"><strong>Email:</strong> {{ selected_contact.email or '—' }}</div>
+                    <div class="col-md-6"><strong>Phone:</strong> {{ selected_contact.phone or '—' }}</div>
+                    <div class="col-md-6"><strong>LinkedIn:</strong> {% if selected_contact.linkedin_url %}<a href="{{ selected_contact.linkedin_url }}" target="_blank">View profile</a>{% else %}—{% endif %}</div>
+                    <div class="col-12"><strong>Notes:</strong><br>{{ selected_contact.notes or 'No notes available.' }}</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card sticky-form-card">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">{% if edit_contact %}Edit Contact{% else %}Add Contact{% endif %}</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% if edit_contact %}{{ url_for('edit_contact', contact_id=edit_contact.contact_id) }}{% else %}{{ url_for('add_contact') }}{% endif %}">
+                    <div class="mb-3">
+                        <label class="form-label">Company</label>
+                        <select name="company_id" class="form-select" required>
+                            <option value="">Select company</option>
+                            {% for company in companies %}
+                            <option value="{{ company.company_id }}" {% if edit_contact and edit_contact.company_id == company.company_id %}selected{% endif %}>{{ company.company_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contact Name</label>
+                        <input type="text" name="contact_name" class="form-control" required value="{{ edit_contact.contact_name if edit_contact else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" name="title" class="form-control" value="{{ edit_contact.title if edit_contact else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ edit_contact.email if edit_contact else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ edit_contact.phone if edit_contact else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">LinkedIn URL</label>
+                        <input type="url" name="linkedin_url" class="form-control" value="{{ edit_contact.linkedin_url if edit_contact else '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea name="notes" class="form-control" rows="4">{{ edit_contact.notes if edit_contact else '' }}</textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">{% if edit_contact %}Update{% else %}Add{% endif %} Contact</button>
+                        {% if edit_contact %}
+                        <a href="{{ url_for('contacts') }}" class="btn btn-outline-secondary">Cancel</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

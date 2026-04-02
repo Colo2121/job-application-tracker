@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Job Application Tracker{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="{{ url_for('dashboard') }}">Job Tracker</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint in ['companies', 'add_company', 'edit_company', 'delete_company'] %}active{% endif %}" href="{{ url_for('companies') }}">Companies</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint in ['jobs', 'add_job', 'edit_job', 'delete_job'] %}active{% endif %}" href="{{ url_for('jobs') }}">Jobs</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint in ['applications', 'add_application', 'edit_application', 'delete_application'] %}active{% endif %}" href="{{ url_for('applications') }}">Applications</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint in ['contacts', 'add_contact', 'edit_contact', 'delete_contact'] %}active{% endif %}" href="{{ url_for('contacts') }}">Contacts</a></li>
+                <li class="nav-item"><a class="nav-link {% if request.endpoint == 'job_match' %}active{% endif %}" href="{{ url_for('job_match') }}">Job Match</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="container py-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function confirmDelete(itemName) {
+    return confirm(`Are you sure you want to delete this ${itemName}? This action cannot be undone.`);
+}
+</script>
+</body>
+</html>

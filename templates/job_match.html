@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Job Match | Job Application Tracker{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="page-title mb-1">Job Match</h1>
+        <p class="text-muted mb-0">Enter your skills and compare them with job requirements.</p>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="post" action="{{ url_for('job_match') }}">
+            <label class="form-label fw-semibold">Your Skills</label>
+            <div class="input-group">
+                <input type="text" name="skills" class="form-control" placeholder="Python, SQL, Flask" value="{{ user_skills_text }}" required>
+                <button type="submit" class="btn btn-primary">Match Jobs</button>
+            </div>
+            <div class="form-text">Separate skills with commas. Example: Python, SQL, Flask</div>
+        </form>
+    </div>
+</div>
+
+{% if results %}
+<div class="row g-4">
+    {% for result in results %}
+    <div class="col-lg-6">
+        <div class="card h-100 match-card border-start border-4 {% if result.match_percentage >= 80 %}border-success{% elif result.match_percentage >= 50 %}border-warning{% else %}border-danger{% endif %}">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                    <div>
+                        <h2 class="h5 mb-1">{{ loop.index }}. {{ result.job_title }}</h2>
+                        <div class="text-muted">{{ result.company_name }}{% if result.job_type %} • {{ result.job_type }}{% endif %}</div>
+                    </div>
+                    <span class="badge text-bg-primary fs-6">{{ result.match_percentage }}%</span>
+                </div>
+
+                <p class="mb-2"><strong>Matched:</strong> {{ result.matched_count }}/{{ result.total_required }} skills</p>
+
+                <div class="mb-2">
+                    <strong>Required Skills:</strong><br>
+                    {% if result.requirements %}
+                        {% for skill in result.requirements %}
+                            <span class="badge text-bg-light border me-1 mb-1">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No requirements listed.</span>
+                    {% endif %}
+                </div>
+
+                <div class="mb-2">
+                    <strong>Matched Skills:</strong><br>
+                    {% if result.matched %}
+                        {% for skill in result.matched %}
+                            <span class="badge bg-success me-1 mb-1">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">No matched skills.</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <strong>Missing Skills:</strong><br>
+                    {% if result.missing %}
+                        {% for skill in result.missing %}
+                            <span class="badge bg-danger me-1 mb-1">{{ skill }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-success">No missing skills.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% elif user_skills_text %}
+<div class="alert alert-warning">No jobs found to compare.</div>
+{% endif %}
+{% endblock %}
